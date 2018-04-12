@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="ja-JP">
+<head>
+<meta charset="UTF-8">
+<meta name="description" content="Auto Save UI">
+<title>Auto Save UI</title>
+</head>
+<style>
+#autosave_message{
+    background-color:#bce8f1;
+    box-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+    z-index: 10;
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 350px;
+    padding: 5px 0px;
+    text-align: center;
+    border-radius: 4px;
+    font-size: 90%;
+    display:none;
+}
+</style>
+<body>
+
+<form>
+<fieldset>
+<legend>FORM</legend>
+<p>
+Text1: <input type="text" name="text1" id="text1"><br>
+Text2: <input type="text" name="text2" id="text2"><br>
+</p>
+<p>
+<label><input type="radio" name="radiogroup1" id="radiogroup1_1"> Radio1</label>
+<label><input type="radio" name="radiogroup1" id="radiogroup1_2"> Radio2</label>
+</p>
+<p>
+<label><input type="checkbox" name="checkboxgroup1" id="checkboxgroup1_1"> Checkbox1</label>
+<label><input type="checkbox" name="checkboxgroup1" id="checkboxgroup1_2"> Checkbox2</label>
+</p>
+<p>
+<select id="select1">
+<option>Option1</option>
+<option>Option2</option>
+</select>
+</p>
+<p>
+<textarea name="textarea1" id="textarea1" cols="50" rows="10"></textarea>
+</p>
+</fieldset>
+
+<p>
+<input type="submit" value="SUBMIT">
+<input type="reset" value="CLEAR">
+</p>
+</fieldset>
+</form>
+
+<div id="autosave_message">
+Your input data was saved automatically.
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script>
+var AutoSave = function( prefix, id_list, message_el, time ){
+    this.prefix = prefix;
+    this.storekeys = id_list;
+    this.message_el = message_el;
+    this.time = time || 10000;
+    for(var i=0; i<this.storekeys.length; i++){
+        var storekey = this.storekeys[i];
+        var el = $('#' + storekey );
+        if( el.attr('type') === 'text' || el.prop('tagName') === 'SELECT' || el.prop('tagName') === 'TEXTAREA' ){
+            el.val( this.getValue(storekey) || '' );
+        }else if( ( el.attr('type') === 'radio' || el.attr('type') === 'checkbox' ) && this.getValue(storekey) === '1' ){
+            el.prop('checked', true);
+        }
+    }
+    setInterval( $.proxy(this.save, this), this.time );
+    return this;
+};
+AutoSave.prototype.save = function(){
+    var change = false;
+    for(var i=0; i<this.storekeys.length; i++){
+        var storekey = this.storekeys[i];
+        var el = $('#' + storekey );
+        if( el.attr('type') === 'text' || el.prop('tagName') === 'SELECT' || el.prop('tagName') === 'TEXTAREA' ){
+            if( this.getValue(storekey) !== el.val() ){
+                this.setValue(storekey, el.val());
+                change = true;
+            }
+        }else if( el.attr('type') === 'radio' || el.attr('type') === 'checkbox' ){
+            if( el.prop('checked') === true && this.getValue(storekey) !== '1' ){
+                this.setValue(storekey,1);
+            }else{
+                this.removeValue(storekey);
+            }
+        }
+    }
+    if(change){
+        $(this.message_el).hide().fadeIn(200).delay(3000).fadeOut(1000);
+    }
+};
+AutoSave.prototype.getValue= function( storekey ){
+    return String( localStorage.getItem( this.prefix +'_'+ storekey ) || '' );
+};
+AutoSave.prototype.setValue= function( storekey, value ){
+    localStorage.setItem( this.prefix +'_'+ storekey, value );
+};
+AutoSave.prototype.removeValue= function( storekey ){
+    localStorage.removeItem( this.prefix +'_'+ storekey );
+};
+
+var input_list = $('form input[type=text], form input[type=radio], form input[type=checkbox], form select, form textarea');
+var input_id_list = [];
+input_list.each(function( i, el ){
+    input_id_list.push( el.id );
+});
+var as = new AutoSave( 'form', input_id_list, '#autosave_message' );
+</script>
+
+</body>
+</html>
