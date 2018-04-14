@@ -57,7 +57,6 @@ Text2: <input type="text" name="text2" id="text2"><br>
 </form>
 
 <div id="autosave_message">
-Your input data was saved automatically.
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
@@ -70,11 +69,17 @@ var AutoSave = function( prefix, id_list, message_el, time ){
     for(var i=0; i<this.storekeys.length; i++){
         var storekey = this.storekeys[i];
         var el = $('#' + storekey );
-        if( el.attr('type') === 'text' || el.prop('tagName') === 'SELECT' || el.prop('tagName') === 'TEXTAREA' ){
-            el.val( this.getValue(storekey) || '' );
+        if( ( el.attr('type') === 'text' || el.prop('tagName') === 'SELECT' || el.prop('tagName') === 'TEXTAREA' ) && this.getValue(storekey) != '' ){
+            el.val( this.getValue(storekey) );
+            change = true;
         }else if( ( el.attr('type') === 'radio' || el.attr('type') === 'checkbox' ) && this.getValue(storekey) === '1' ){
             el.prop('checked', true);
+            change = true;
         }
+    }
+    if(change){
+        $(this.message_el).html('Your data input before was recovered.');
+        $(this.message_el).fadeIn(200).delay(3000).fadeOut(1000);
     }
     setInterval( $.proxy(this.save, this), this.time );
     return this;
@@ -98,7 +103,8 @@ AutoSave.prototype.save = function(){
         }
     }
     if(change){
-        $(this.message_el).hide().fadeIn(200).delay(3000).fadeOut(1000);
+        $(this.message_el).html('Your input data was saved automatically.');
+        $(this.message_el).fadeIn(200).delay(3000).fadeOut(1000);
     }
 };
 AutoSave.prototype.getValue= function( storekey ){
