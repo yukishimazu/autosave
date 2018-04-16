@@ -66,6 +66,7 @@ var AutoSave = function( prefix, id_list, message_el, time ){
     this.storekeys = id_list;
     this.message_el = message_el;
     this.time = time || 10000;
+    var change = false;
     for(var i=0; i<this.storekeys.length; i++){
         var storekey = this.storekeys[i];
         var el = $('#' + storekey );
